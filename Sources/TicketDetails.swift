@@ -3,17 +3,29 @@ import UIKit
 
 // MARK: - Haptics
 //
-// NOTE: the iOS Simulator has no Taptic Engine, so these are silent no-ops there —
-// the feedback only actually fires on a physical device.
+// Retained generators so prepare() actually warms the Taptic Engine for the upcoming
+// impact, rather than warming a throwaway that deallocates before it can help.
+// Silent no-ops on the Simulator (no Taptic Engine); fire only on a physical device.
+// UIFeedbackGenerator must be used on the main thread — enforced via @MainActor.
 
-enum Haptics {
-    static func impact(_ style: UIImpactFeedbackGenerator.FeedbackStyle) {
-        let generator = UIImpactFeedbackGenerator(style: style)
-        generator.prepare()
-        generator.impactOccurred()
+@MainActor
+final class HapticsController {
+    private let press = UIImpactFeedbackGenerator(style: .soft)
+    private let reveal = UIImpactFeedbackGenerator(style: .rigid)
+
+    /// Press-down: a soft "registered" tick, and warm the engine so the rigid reveal
+    /// ~0.35s later (the long-press window) lands crisp and low-latency.
+    func pressDown() {
+        reveal.prepare()
+        press.impactOccurred()
+        press.prepare()
     }
 
-    static func soft() { impact(.soft) }
+    /// Long-press completed: crisp, pre-warmed rigid impact.
+    func revealImpact() {
+        reveal.impactOccurred()
+        reveal.prepare()
+    }
 }
 
 // MARK: - Siri-style rotating rainbow glow (signifies "Siri-powered")
