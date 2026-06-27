@@ -10,8 +10,11 @@ final class SiriVoice {
     static let shared = SiriVoice()
     private let synth = AVSpeechSynthesizer()
 
+    /// Master switch for spoken Siri lines. Off for now — flip to true to re-enable.
+    static var enabled = false
+
     func speak(_ text: String?) {
-        guard let text, !text.isEmpty else { return }
+        guard SiriVoice.enabled, let text, !text.isEmpty else { return }
         let utterance = AVSpeechUtterance(string: text)
         utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
         synth.speak(utterance)
