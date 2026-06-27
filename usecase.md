@@ -1,7 +1,8 @@
-# Use Cases — Anticipatory Ticket Details
+# Use Cases — Anticipatory Ticket Live Activity
 
 > Companion to [`prd.md`](prd.md). Maps each `JourneyPhase` to the user's situation, the
-> story behind it, and the content that should lead vs. recede in that moment.
+> story behind it, and what the **Live Activity** should present in that moment — across the
+> Dynamic Island (minimal / compact / expanded) and the Lock Screen.
 >
 > Grounded in the actual pass: **USA vs Argentina, FIFA World Cup 2026 Semi-final**,
 > MetLife Stadium · Gate C · Section 112, Row 8, Seat 14 · doors 4:00 PM · kickoff 7:00 PM ET
@@ -9,64 +10,64 @@
 
 ## The core idea
 
-The ticket holds the same ~15 facts the whole time. What changes is **which fact is the
-answer to the question the user is silently asking when they open the pass.** Each phase
-below names that question, the content that answers it (the *lead*), what supports it, and
-what should get out of the way.
+The ticket holds the same ~15 facts the whole time. What changes is **which fact answers the
+question the user is silently asking when they glance at a locked phone.** A Live Activity
+puts that one answer on the Lock Screen / Dynamic Island with no app-open required, and the
+`JourneyPhase` engine drives which answer leads. Each phase below names that question, what
+the activity should show in each surface, and what should get out of the way.
 
-`backFields` order (VENUE · MATCH ID · ENTRANCE · DOORS · TERMS · SUPPORT) is the neutral
-fallback — correct, but answers no specific question. Every phase improves on it by leading.
+`unknown` phase = a neutral countdown card (no wrong lead). Every other phase improves on it
+by leading with the moment's answer.
+
+### The Dynamic Island regions, in plain terms
+
+- **minimal** — a single glyph/value when the activity shares the pill with another app.
+- **compactLeading / compactTrailing** — the two small slots flanking the camera when this is
+  the only activity.
+- **expanded** — the tap/long-press detail (and the Lock Screen card uses the same content).
 
 ---
 
 ## Phase 1 — `preEvent` (days/hours out, away from venue)
 
-**Silent question:** *"When and where is this, and do I need to do anything yet?"*
+**Silent question:** *"When is this, and do I need to do anything yet?"*
 
-**Story.** It's the Sunday before. The user opens Wallet to reassure themselves the ticket is
-real and to sanity-check the plan. They are not at the stadium and won't be for days. They
-want orientation, not turn-by-turn detail.
+**Story.** The Sunday before. The user glances to reassure themselves it's real and to keep
+the date in mind. Not at the venue, won't be for days. Orientation, not detail.
 
-**Lead content**
-- Countdown + date/time: "Semi-final · Tue Jul 14 · doors 4:00 PM, kickoff 7:00 PM"
-- Venue name + city: "MetLife Stadium, East Rutherford NJ"
-
-**Support (visible, secondary)**
-- Seat: Section 112 · Row 8 · Seat 14
-- Recommended entrance: Gate C
-
-**Demote (behind "More")**
-- Terms & conditions, ticket support, match ID.
+| Surface | Content |
+|---|---|
+| minimal | countdown glyph (`⏱`) |
+| compact | "Sat" · `Text(doors, style:.relative)` to doors |
+| expanded / Lock Screen | "Semi-final · doors 4:00 PM, kickoff 7:00 PM · MetLife Stadium" + days-to-go |
 
 **Summary line (template):** "3 days to kickoff — doors open 4:00 PM Saturday at MetLife
 Stadium. Plan to arrive early; this is a Semi-final."
+
+`relevanceScore`: low. `staleDate`: well after kickoff.
 
 ---
 
 ## Phase 2 — `approaching` (within the travel window, en route)
 
-**Silent question:** *"Should I be leaving, and where exactly am I going?"*
+**Silent question:** *"Should I be leaving, and where am I going?"*
 
-**Story.** It's match day, early afternoon. The user is at home or already driving. The
-decision on the table is *logistics*: when to leave, which gate, where to park. Seat number
-doesn't matter yet — they can't scan in from the highway.
+**Story.** Match day, early afternoon, at home or driving. The decision is logistics — when
+to leave, which gate. Seat doesn't matter yet; they can't scan in from the highway.
 
-**Lead content**
-- Time-to-doors / leave-by framing: "Doors open in 2h 10m"
-- Recommended entrance + plaza: "Gate C — West Plaza"
-
-**Support**
-- Venue address (for maps hand-off), parking/transit hint if available.
-
-**Demote**
-- Seat detail, terms, support, QR (not useful in transit).
+| Surface | Content |
+|---|---|
+| minimal | gate glyph or countdown |
+| compact | `Text(doors, style:.timer)` + "Gate C" |
+| expanded / Lock Screen | "Doors in 2h 10m → Gate C, West Plaza" + venue address for maps hand-off |
 
 **Summary line (template):** "Doors open at 4:00 PM — head for Gate C on the West Plaza.
-MetLife Stadium parking fills early for Semi-finals."
+MetLife parking fills early for Semi-finals."
 
-> This is the phase most improved by *location*: "approaching" should trigger on proximity
-> to the venue, not just clock time. On the Simulator (no real GPS) it degrades to a
-> time-window heuristic.
+> Most improved by *location*. On the Simulator this is driven by the **GPX route** crossing
+> into the travel window; absent location it falls back to the clock.
+
+`relevanceScore`: rising as doors near.
 
 ---
 
@@ -74,44 +75,44 @@ MetLife Stadium parking fills early for Semi-finals."
 
 **Silent question:** *"How do I get in — fast?"*
 
-**Story.** The user is in the crowd outside Gate C. Phone is out, thumb hovering. The only
-things that matter now are the **QR code** (to scan) and the **entrance + seat** (to find
-their way). Everything else is noise in a loud, moving crowd.
+**Story.** In the crowd outside Gate C, phone out. Only two things matter: the **QR** (to
+scan) and **gate + seat** (to find the way). Everything else is noise. This is the beat the
+**Simulator GPX geofence** fires.
 
-**Lead content**
-- **QR code, prominent** — this is the scan moment.
-- Gate C · Section 112 · Row 8 · Seat 14
+| Surface | Content |
+|---|---|
+| minimal | gate glyph (`🎫`) |
+| compact | "Gate C" · "112" |
+| expanded / Lock Screen | **QR prominent** + "Gate C → Section 112 · Row 8 · Seat 14" |
 
-**Support**
-- "Doors are open" confirmation.
+**Summary line (template):** "You're at MetLife. Enter at Gate C, then Section 112, Row 8,
+Seat 14. Have your QR ready."
 
-**Demote**
-- Date/countdown (they're here), terms, support, match ID, venue address.
+`relevanceScore`: highest — this is the moment the activity should win the pill.
 
-**Summary line (template):** "You're at MetLife. Enter at Gate C, then head to Section 112,
-Row 8, Seat 14. Have your QR ready."
+> Note: a scannable QR really lives on the **Lock Screen / expanded** surface; the Dynamic
+> Island compact slots are too small for a QR, so they carry gate/section and a "tap for QR"
+> affordance.
 
 ---
 
 ## Phase 4 — `inProgress` (kickoff → final whistle)
 
-**Silent question:** *"(probably nothing — I'm watching the match.)"*
+**Silent question:** *"(probably nothing — I'm watching.)"*
 
-**Story.** The match is on. The user rarely opens the pass here; if they do, it's to
-re-confirm their seat after a concourse trip, or to show a steward. Minimal, calm content.
+**Story.** The match is on. The user rarely looks; if they do, it's to re-confirm their seat
+after a concourse trip or show a steward. Minimal, calm.
 
-**Lead content**
-- Seat: Section 112 · Row 8 · Seat 14 (for re-entry / steward checks).
-- QR (re-entry, if the venue allows it).
-
-**Support**
-- "No re-entry" note *if* it applies (it does — see terms).
-
-**Demote**
-- Everything time-based, directions, support.
+| Surface | Content |
+|---|---|
+| minimal | seat glyph |
+| compact | "Sec 112" · "Seat 14" |
+| expanded / Lock Screen | "Section 112 · Row 8 · Seat 14 — no re-entry" |
 
 **Summary line (template):** "USA vs Argentina is underway. Your seat: Section 112, Row 8,
 Seat 14. Note: no re-entry."
+
+`relevanceScore`: low. (We have no live score — keep it to seat; don't fake data.)
 
 ---
 
@@ -119,42 +120,40 @@ Seat 14. Note: no re-entry."
 
 **Silent question:** *"Is this over? Anything I still need this for?"*
 
-**Story.** Full time. The ticket has done its job. The user might open it out of habit, to
-keep as a memento, or to chase a refund/resale/support issue. Lead with closure and the one
-remaining actionable thing (support/resale), demote the now-useless logistics.
+**Story.** Full time. The ticket's done its job. Lead with closure + the one remaining
+actionable thing (support/resale), then **end the activity** so it dismisses from the pill.
 
-**Lead content**
-- Closure line / memento framing: "Thanks for coming — USA vs Argentina, Semi-final."
-- Ticket support + official resale note.
+| Surface | Content |
+|---|---|
+| expanded / Lock Screen (final frame) | "Full time — thanks for coming. Issues? Ticket support; resale via the official FIFA platform." |
 
-**Support**
-- Match ID (for any post-event correspondence).
-
-**Demote**
-- Gate, seat, doors, QR, countdown.
+Then call `activity.end(...)` with a short dismissal so it clears.
 
 **Summary line (template):** "Match complete. Keep this as a memento — for any issues,
 contact ticket support; resale only via the official FIFA platform."
+
+`staleDate`: at/just after `eventEndDate`.
 
 ---
 
 ## Phase 0 — `unknown` (fallback / ground state)
 
-**Story.** The engine can't confidently place the user (missing/odd dates, no location, a
-demo with the clock far from the event). We don't guess.
+**Story.** The engine can't confidently place the user (missing/odd dates, no location, demo
+clock far from the event). We don't guess.
 
-**Behavior.** Render the raw `backFields` in `pass.json` order, no lead line, no demotion.
-This is exactly today's island — the safe floor the PRD calls the "ground" state.
+**Behavior.** Show a neutral countdown card — match, teams, kickoff time — no phase-specific
+lead, no QR. The safe floor; we never present a *wrong* lead.
 
 ---
 
 ## Content-importance matrix
 
-A quick read of which content leads (●●●), supports (●●○), or recedes (○○○) per phase.
+Which content leads (●●●), supports (●●○), or recedes (○○○) per phase — now read as "what
+fills the Dynamic Island / Lock Screen surfaces."
 
 | Content | preEvent | approaching | atVenue | inProgress | postEvent |
 |---|---|---|---|---|---|
-| QR code | ○○○ | ○○○ | ●●● | ●●○ | ○○○ |
+| QR code (Lock Screen / expanded) | ○○○ | ○○○ | ●●● | ●●○ | ○○○ |
 | Date / countdown | ●●● | ●●● | ○○○ | ○○○ | ○○○ |
 | Venue + address | ●●● | ●●○ | ●●○ | ○○○ | ○○○ |
 | Gate / entrance | ●●○ | ●●● | ●●● | ●●○ | ○○○ |
@@ -165,30 +164,25 @@ A quick read of which content leads (●●●), supports (●●○), or recede
 
 ## Why this matters (the product argument)
 
-- **The ticket never changes; the answer does.** One JSON file, five different "right
-  answers," selected by `(now, location)`. No new data, pure ranking — cheap to build, high
-  perceived intelligence.
-- **The QR migration is the sharpest demo beat.** It's buried/absent early, then becomes the
-  hero at the gate, then recedes. That single behavior sells the "it knows where I am in the
-  journey" story better than any copy.
-- **Failure is graceful by construction.** Unknown phase → today's flat list. We never show
-  a *wrong* lead; worst case is a *neutral* one.
+- **The ticket never changes; the answer does.** One JSON file, five "right answers," picked
+  by `(now, location)` and pushed to the Lock Screen — no app-open, no scanning.
+- **The QR migration is the sharpest demo beat.** It's absent early, becomes the hero when
+  the GPX route crosses the venue geofence, then recedes. That single behavior sells "it
+  knows where I am in the journey" better than any copy — and it fires on the Simulator.
+- **Failure is graceful by construction.** Unknown phase → neutral countdown. Worst case is a
+  *neutral* card, never a wrong one. Push is absent → the local timer still ticks.
 
 ## How these phases map to real system surfaces (Siri research)
 
-The in-app island renders all five phases on open. But phases **2–3 (`approaching`,
-`atVenue`)** are the ones a real proactive system could surface *without the user opening
-anything* — and the research clarified exactly how:
-
-- **"Leave now" / countdown to kickoff** → an **ActivityKit Live Activity** in the Lock
-  Screen and **Dynamic Island** (local timer, runs on the Simulator). Strongest demoable fit.
-- **"You're at Gate C"** → a **CoreLocation `CLMonitor` geofence** around MetLife, driven by
-  a Simulator GPX route, flipping the content to gate/seat/QR on arrival.
+- **"Leave now" / countdown** → the **Live Activity** itself (Dynamic Island + Lock Screen,
+  local timer, runs on the Simulator).
+- **"You're at Gate C"** → **CoreLocation `CLMonitor` geofence**, driven by a Simulator GPX
+  route, flipping `ContentState` to `atVenue`.
 - **"Surface the pass/app at the right moment"** → real **Siri** via App Intents /
-  `NSUserActivity` donation (suggests the *app*, not the panel's contents) and signed-pass
-  relevance fields (surfaces the *pass* in system Wallet).
+  `NSUserActivity` donation (suggests the *app*) and signed-pass relevance fields (surfaces
+  the *pass* in system Wallet) — the honest "Siri-aware" layer.
 
-Key distinction the research settled: **the in-panel ranking/summary is AFM
-(FoundationModels), not Siri** — there is no public API to have "actual Siri" rank or write
-the panel text. "Siri-powered" is accurate only for the proactive *surfacing* layer above.
-See `prd.md` → "Siri & system-surfacing research" for the full verdict and API map.
+Settled distinction: **the lead/summary content is chosen by the rules engine + AFM
+(FoundationModels), not Siri** — there's no public API to have actual Siri rank or write it.
+"Siri-powered" is accurate only for the proactive *surfacing* layer. See `prd.md` →
+"Siri & system-surfacing research" for the full verdict and API map.
