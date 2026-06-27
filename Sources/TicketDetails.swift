@@ -162,16 +162,20 @@ struct TicketDetailsIsland: View {
         .padding(.vertical, 9)
     }
 
-    // Siri's spoken offer, shown in place of the field rows in the resell flow.
+    // Siri's offer, shown in place of the field rows in the resell flow. A plain clickable
+    // button — the glow + logo live only on the island's edges/header, not inside here.
     private func siriPromptRow(_ text: String) -> some View {
-        HStack(alignment: .top, spacing: 8) {
-            Image(systemName: "sparkles").foregroundStyle(.secondary)
-            Text(text).font(.subheadline.weight(.medium))
+        Button {
+            SiriVoice.shared.speak(text)
+        } label: {
+            Text(text)
+                .font(.subheadline.weight(.medium))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(14)
+                .background(.white.opacity(0.22), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
-        .background(.white.opacity(0.22), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .siriGlow(cornerRadius: 16)
+        .buttonStyle(.plain)
         .padding(.vertical, 6)
     }
 }
