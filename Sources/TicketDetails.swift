@@ -10,18 +10,14 @@ import UIKit
 
 @MainActor
 final class HapticsController {
-    private let press = UIImpactFeedbackGenerator(style: .soft)
     private let reveal = UIImpactFeedbackGenerator(style: .rigid)
 
-    /// Press-down: a soft "registered" tick, and warm the engine so the rigid reveal
-    /// ~0.35s later (the long-press window) lands crisp and low-latency.
-    func pressDown() {
+    /// Warm the Taptic Engine on appear so the first flip tap lands crisp and low-latency.
+    func prewarm() {
         reveal.prepare()
-        press.impactOccurred()
-        press.prepare()
     }
 
-    /// Long-press completed: crisp, pre-warmed rigid impact.
+    /// Card flip: a crisp, pre-warmed rigid impact, then re-arm for the flip back.
     func revealImpact() {
         reveal.impactOccurred()
         reveal.prepare()
@@ -85,7 +81,7 @@ extension View {
     }
 }
 
-// MARK: - The "Ticket Details" island (revealed on long-press)
+// MARK: - The "Ticket Details" island (carried on the back of the flipped card)
 
 struct TicketDetailsIsland: View {
     let fields: [PassDocument.Field]

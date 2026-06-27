@@ -29,7 +29,7 @@
   ],
   "eventTicket": {
     "headerFields": [
-      { "key": "gate", "label": "GATE", "value": "C", "textAlignment": "PKTextAlignmentRight" }
+      { "key": "gate", "label": "GATE", "value": "C" }
     ],
     "primaryFields": [
       { "key": "home", "label": "USA", "value": "USA" },
