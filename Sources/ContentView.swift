@@ -5,6 +5,7 @@ struct ContentView: View {
 
     @State private var showDetails = false
     @State private var isPressing = false
+    @State private var haptics = HapticsController()
 
     private var backFields: [PassDocument.Field] { doc.eventTicket.backFields ?? [] }
 
@@ -19,7 +20,7 @@ struct ContentView: View {
                             revealDetails()
                         } onPressingChanged: { pressing in
                             isPressing = pressing
-                            if pressing { Haptics.soft() }
+                            if pressing { haptics.pressDown() }
                         }
                         .accessibilityAddTraits(.isButton)
                         .accessibilityHint("Shows ticket details")
@@ -56,7 +57,7 @@ struct ContentView: View {
     }
 
     private func revealDetails() {
-        Haptics.impact(.rigid)
+        haptics.revealImpact()
         withAnimation(.spring(response: 0.42, dampingFraction: 0.82)) {
             showDetails = true
         }
