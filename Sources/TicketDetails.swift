@@ -85,6 +85,7 @@ extension View {
 
 struct TicketDetailsIsland: View {
     let fields: [PassDocument.Field]
+    var siriPrompt: String? = nil
     var onClose: () -> Void
 
     @State private var contentHeight: CGFloat = 0
@@ -94,12 +95,18 @@ struct TicketDetailsIsland: View {
         VStack(alignment: .leading, spacing: 0) {
             header
             ScrollView {
-                fieldsColumn
-                    .onGeometryChange(for: CGFloat.self) { proxy in
-                        proxy.size.height
-                    } action: { height in
-                        contentHeight = height
+                Group {
+                    if let siriPrompt {
+                        siriPromptRow(siriPrompt)   // Siri took over the island: offer, no fields
+                    } else {
+                        fieldsColumn
                     }
+                }
+                .onGeometryChange(for: CGFloat.self) { proxy in
+                    proxy.size.height
+                } action: { height in
+                    contentHeight = height
+                }
             }
             .scrollBounceBehavior(.basedOnSize)
             // Hug the content, but cap so a tall ticket / large Dynamic Type scrolls
@@ -153,5 +160,28 @@ struct TicketDetailsIsland: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 9)
+    }
+
+    // Siri's offer, shown in place of the field rows in the resell flow. A plain tappable
+    // row (no background box) — just the prompt text and a chevron, matching the field rows.
+    private func siriPromptRow(_ text: String) -> some View {
+        let shape = RoundedRectangle(cornerRadius: 16, style: .continuous)
+        return Button {
+            SiriVoice.shared.speak(text)
+        } label: {
+            HStack(spacing: 10) {
+                Text(text)
+                    .font(.headline.weight(.semibold))
+                    .multilineTextAlignment(.leading)
+                Spacer(minLength: 8)
+                Image(systemName: "chevron.forward").font(.subheadline.weight(.bold))
+            }
+            .foregroundStyle(.primary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 14)
+            .contentShape(shape)
+        }
+        .buttonStyle(.plain)
+        .padding(.vertical, 6)
     }
 }

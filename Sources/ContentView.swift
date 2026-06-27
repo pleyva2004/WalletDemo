@@ -3,6 +3,19 @@ import SwiftUI
 struct ContentView: View {
     private let doc = PassStore.document
 
+    /// When true, the card arrives already flipping to the Ticket Details island (used by
+    /// the Messages resell flow). `siriPrompt`, when set, replaces the island's field rows.
+    let initiallyFlipped: Bool
+    let siriPrompt: String?
+    /// When set, a top-left "Back to Messages" button returns to the thread.
+    let onBack: (() -> Void)?
+
+    init(initiallyFlipped: Bool = false, siriPrompt: String? = nil, onBack: (() -> Void)? = nil) {
+        self.initiallyFlipped = initiallyFlipped
+        self.siriPrompt = siriPrompt
+        self.onBack = onBack
+    }
+
     /// 0 = front (pass) facing the viewer, 180 = back (Ticket Details) facing the viewer.
     @State private var flipAngle: Double = 0
     @State private var cardSize: CGSize = .zero
@@ -24,8 +37,26 @@ struct ContentView: View {
                 .padding()
             }
             .navigationTitle("Wallet")
+            .toolbar {
+                if let onBack {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button(action: onBack) {
+                            HStack(spacing: 3) {
+                                Image(systemName: "chevron.backward").font(.body.weight(.semibold))
+                                Text("Back to Messages")
+                            }
+                        }
+                    }
+                }
+            }
         }
-        .onAppear { haptics.prewarm() }
+        .onAppear {
+            haptics.prewarm()
+            if initiallyFlipped && !showingBack {
+                toggleFlip()                            // reuse the spring + haptic to reveal
+                SiriVoice.shared.speak(siriPrompt)      // speak as the island lands
+            }
+        }
     }
 
     // MARK: - The card that flips between the pass front and the Ticket Details back
@@ -52,7 +83,7 @@ struct ContentView: View {
         RoundedRectangle(cornerRadius: 18, style: .continuous)
             .fill(passBackground)
             .overlay {
-                TicketDetailsIsland(fields: backFields) { toggleFlip() }
+                TicketDetailsIsland(fields: backFields, siriPrompt: siriPrompt) { toggleFlip() }
             }
             .frame(width: cardSize.width == 0 ? nil : cardSize.width,
                    height: cardSize.height == 0 ? nil : cardSize.height)
