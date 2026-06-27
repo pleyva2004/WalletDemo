@@ -4,7 +4,7 @@ import SwiftUI
 struct WalletDemoApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MessagesThreadView()
         }
     }
 }
