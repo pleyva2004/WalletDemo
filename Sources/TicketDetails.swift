@@ -162,20 +162,29 @@ struct TicketDetailsIsland: View {
         .padding(.vertical, 9)
     }
 
-    // Siri's offer, shown in place of the field rows in the resell flow. A plain clickable
-    // button — the glow + logo live only on the island's edges/header, not inside here.
+    // Siri's offer, shown in place of the field rows in the resell flow. A prominent
+    // clickable button (solid fill + shadow) that stands clearly apart from the glass card;
+    // the glow + logo live only on the island's edges/header, not inside here.
     private func siriPromptRow(_ text: String) -> some View {
         Button {
             SiriVoice.shared.speak(text)
         } label: {
-            Text(text)
-                .font(.subheadline.weight(.medium))
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(14)
-                .background(.white.opacity(0.22), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-                .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            HStack(spacing: 10) {
+                Text(text)
+                    .font(.headline.weight(.semibold))
+                    .multilineTextAlignment(.leading)
+                Spacer(minLength: 8)
+                Image(systemName: "chevron.forward").font(.subheadline.weight(.bold))
+            }
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
         .buttonStyle(.plain)
+        .shadow(color: .black.opacity(0.22), radius: 8, y: 3)
         .padding(.vertical, 6)
     }
 }
