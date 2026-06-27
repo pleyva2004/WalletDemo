@@ -166,9 +166,9 @@ struct TicketDetailsIsland: View {
     // button — same transparent material as the card, but lifted into a clearly-tappable
     // affordance via a bright border, elevation shadow, interactive glass, and a chevron.
     // The glow + logo live only on the island's edges/header, not inside here.
-    // Siri's offer, shown in place of the field rows in the resell flow. No separate glass
-    // layer or shadow (those rendered as a box on top of the island's glass) — it's the same
-    // transparent glass as the card, made clearly tappable by a visible border + chevron.
+    // Siri's offer, shown in place of the field rows in the resell flow. A glassy "box"
+    // filling the exact rounded-rect, with the drop shadow cast from that same shape (a
+    // ShapeStyle drop shadow) so the box AND its shadow corners follow the button's vertices.
     private func siriPromptRow(_ text: String) -> some View {
         let shape = RoundedRectangle(cornerRadius: 16, style: .continuous)
         return Button {
@@ -185,7 +185,8 @@ struct TicketDetailsIsland: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
-            .overlay(shape.strokeBorder(.primary.opacity(0.35), lineWidth: 1.5))
+            .background(shape.fill(.ultraThinMaterial.shadow(.drop(color: .black.opacity(0.22), radius: 6, x: 0, y: 3))))
+            .overlay(shape.strokeBorder(.white.opacity(0.5), lineWidth: 1))
             .contentShape(shape)
         }
         .buttonStyle(.plain)
