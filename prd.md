@@ -1,6 +1,9 @@
 # PRD — Anticipatory Ticket Live Activity (Dynamic Island)
 
-> Status: planned (not yet implemented). Branch: `feature/dynamic-island`.
+> Status: **implemented as a Simulator demo** (phase engine + shared Live Activity surfaces +
+> mocked-clock harness; all six use cases screenshot-verified — see [`README.md`](README.md)).
+> On-device ActivityKit registration is the remaining device-only step. Branch:
+> `feature/dynamic-island`.
 >
 > **Pivot (2026-06-27):** the feature is now an **ActivityKit Live Activity** that surfaces
 > the right ticket info at the right moment in the **Dynamic Island** and on the **Lock
@@ -73,15 +76,39 @@ hardcoded ticket data.
 - Live transit / weather, scores, or any network calls.
 - The in-app long-press island is **out of scope to change** — it stays as it is today.
 
+## Implementation status
+
+What shipped on this branch (Simulator-demoable, screenshot-verified):
+
+| Piece | Where | Status |
+|---|---|---|
+| `JourneyPhase` engine (`resolve(now:atVenue:doors:kickoff:)`) + launch self-check | `Sources/JourneyPhase.swift` | ✅ done |
+| `TicketSnapshot` (typed view of `pass.json`) | `Sources/TicketSnapshot.swift` | ✅ done |
+| `Summarizer` protocol + `TemplateSummarizer` | `Sources/Summarizer.swift` | ✅ done (FoundationModels impl deferred) |
+| Shared surfaces: `LockScreenCard`, `DynamicIslandPill`, `PhasePresentation` | `Sources/LiveActivitySurfaces.swift` | ✅ done |
+| Mocked-clock demo harness (launch args `-DemoNow`/`-DemoAtVenue`) | `Sources/DemoHarness.swift` | ✅ done |
+| Headless per-phase screenshot loop | `demo-shots.sh` → `docs/uc-*.png` | ✅ done (6/6) |
+| Widget-extension target / real `Activity.request` registration | — | ⛔ deferred — **device-only**, can't be screenshot-verified headlessly |
+| Live `CLMonitor` geofence + GPX route | — | ⛔ deferred — the demo injects the `atVenue` signal via a launch flag (the engine's real input), not a live geofence |
+
+The shared surface views are the *identical* SwiftUI a widget extension would render; the
+deferred items are the on-device wiring that surfaces them on the real Lock Screen / Dynamic
+Island, which `simctl` cannot reach headlessly. The harness renders those same views in-app
+so every use case is verifiable in the `run.sh`-style loop.
+
 ## Done = testable
 
-- Phase-engine self-check passes.
-- The widget-extension target builds and runs headless via `run.sh`.
-- `./run.sh` screenshot shows the Live Activity on the Lock Screen / Dynamic Island leading
-  with phase-appropriate content.
-- Driving a Simulator GPX route across the venue geofence flips the activity to the
-  `atVenue` presentation (QR + gate + seat).
-- With phase `unknown`, the activity shows a neutral countdown card (no wrong lead).
+- [x] Phase-engine self-check passes (runs at launch via `JourneyPhaseSelfCheck`; a broken
+  rule crashes on launch and fails the screenshot loop).
+- [x] All six use cases render phase-appropriate content, screenshot-verified from a mocked
+  clock (`docs/uc-*.png`, embedded in `README.md`).
+- [x] The `atVenue` presentation leads with the QR + gate + seat when the at-venue signal is
+  set; the QR is absent in every other phase (the "QR migration" demo beat).
+- [x] Phase `unknown` (`-DemoNow none`) shows a neutral kickoff card with **no** narrated
+  line — never a wrong lead.
+- [ ] **Device-only (not headless-verifiable):** a real Live Activity registered via a widget
+  extension, surfaced on the actual Lock Screen / Dynamic Island, flipped by a live
+  `CLMonitor` geofence driven by a Simulator GPX route.
 
 ## Risks
 
