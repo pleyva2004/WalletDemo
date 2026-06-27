@@ -117,7 +117,6 @@ private struct SiriActionBubble: View {
         VStack(alignment: .leading, spacing: 8) {
             BubbleRow(isSent: false, tail: tail) {
                 TextBubble(text: text, isSent: false)
-                    .siriGlow(cornerRadius: 18)
             }
             Button(action: onOpenPass) {
                 Label("Open Pass in Wallet", systemImage: "wallet.pass.fill")
