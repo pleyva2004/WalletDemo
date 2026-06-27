@@ -186,7 +186,6 @@ struct TicketDetailsIsland: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
             .background(shape.fill(.ultraThinMaterial.shadow(.drop(color: .black.opacity(0.22), radius: 6, x: 0, y: 3))))
-            .overlay(shape.strokeBorder(.white.opacity(0.5), lineWidth: 1))
             .contentShape(shape)
         }
         .buttonStyle(.plain)
