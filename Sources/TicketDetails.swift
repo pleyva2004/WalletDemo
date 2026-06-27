@@ -85,6 +85,7 @@ extension View {
 
 struct TicketDetailsIsland: View {
     let fields: [PassDocument.Field]
+    var siriPrompt: String? = nil
     var onClose: () -> Void
 
     @State private var contentHeight: CGFloat = 0
@@ -94,12 +95,18 @@ struct TicketDetailsIsland: View {
         VStack(alignment: .leading, spacing: 0) {
             header
             ScrollView {
-                fieldsColumn
-                    .onGeometryChange(for: CGFloat.self) { proxy in
-                        proxy.size.height
-                    } action: { height in
-                        contentHeight = height
+                Group {
+                    if let siriPrompt {
+                        siriPromptRow(siriPrompt)   // Siri took over the island: offer, no fields
+                    } else {
+                        fieldsColumn
                     }
+                }
+                .onGeometryChange(for: CGFloat.self) { proxy in
+                    proxy.size.height
+                } action: { height in
+                    contentHeight = height
+                }
             }
             .scrollBounceBehavior(.basedOnSize)
             // Hug the content, but cap so a tall ticket / large Dynamic Type scrolls
@@ -153,5 +160,18 @@ struct TicketDetailsIsland: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 9)
+    }
+
+    // Siri's spoken offer, shown in place of the field rows in the resell flow.
+    private func siriPromptRow(_ text: String) -> some View {
+        HStack(alignment: .top, spacing: 8) {
+            Image(systemName: "sparkles").foregroundStyle(.secondary)
+            Text(text).font(.subheadline.weight(.medium))
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .background(.white.opacity(0.22), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .siriGlow(cornerRadius: 16)
+        .padding(.vertical, 6)
     }
 }

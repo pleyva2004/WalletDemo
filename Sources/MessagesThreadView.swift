@@ -8,6 +8,11 @@ import SwiftUI
 
 struct MessagesThreadView: View {
     private let doc = PassStore.document
+    private let onOpenPass: () -> Void
+
+    init(onOpenPass: @escaping () -> Void = {}) {
+        self.onOpenPass = onOpenPass
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -15,7 +20,7 @@ struct MessagesThreadView: View {
             Divider()
             ScrollView {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("iMessage • Today 2:14 PM")
+                    Text("iMessage • Yesterday 8:42 PM")
                         .font(.caption2).foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
@@ -23,7 +28,11 @@ struct MessagesThreadView: View {
                     ForEach(script) { msg in
                         switch msg.kind {
                         case .received:
-                            BubbleRow(isSent: false, tail: msg.tail) { TextBubble(text: msg.text, isSent: false) }
+                            if msg.siri {
+                                SiriActionBubble(text: msg.text, tail: msg.tail, onOpenPass: onOpenPass)
+                            } else {
+                                BubbleRow(isSent: false, tail: msg.tail) { TextBubble(text: msg.text, isSent: false) }
+                            }
                         case .sent:
                             BubbleRow(isSent: true, tail: msg.tail) { TextBubble(text: msg.text, isSent: true) }
                         case .ticket:
@@ -40,15 +49,9 @@ struct MessagesThreadView: View {
     // The scripted thread. `tail` marks the last bubble of each consecutive run.
     private var script: [Message] {
         [
-            .init(.received, "Wait — did you actually get the USA vs Argentina semi?? 🇺🇸🇦🇷", tail: true),
-            .init(.sent, "Got two. 🎟️", tail: false),
-            .init(.ticket),
-            .init(.received, "STOP. MetLife?!", tail: true),
-            .init(.sent, "Yep — Section 112, lower tier 🔥", tail: true),
-            .init(.received, "What time should we get there", tail: true),
-            .init(.sent, "Doors at 4, kickoff 7. We go in Gate C 🚪", tail: false),
-            .init(.sent, "Bring the face paint 🎨", tail: true),
-            .init(.received, "Obviously. See you there 🙌", tail: true),
+            .init(.received, "Hey… I'm so sorry but I can't make the match tomorrow 😞", tail: true),
+            .init(.sent, "wait, are you sure?", tail: true),
+            .init(.received, "Unfortunately yes — you should try reselling it.", tail: true, siri: true),
         ]
     }
 }
@@ -61,8 +64,9 @@ private struct Message: Identifiable {
     let kind: Kind
     let text: String
     let tail: Bool
-    init(_ kind: Kind, _ text: String = "", tail: Bool = false) {
-        self.kind = kind; self.text = text; self.tail = tail
+    let siri: Bool   // Siri-surfaced: glow the bubble + show the "Open Pass in Wallet" action
+    init(_ kind: Kind, _ text: String = "", tail: Bool = false, siri: Bool = false) {
+        self.kind = kind; self.text = text; self.tail = tail; self.siri = siri
     }
 }
 
@@ -99,6 +103,30 @@ private struct TextBubble: View {
                 BubbleShape(isSent: isSent)
                     .fill(isSent ? Color(red: 0.04, green: 0.52, blue: 1.0) : Color(.systemGray5))
             )
+    }
+}
+
+// A Siri-surfaced received bubble: rainbow glow + a contextual "Open Pass in Wallet" action,
+// and Siri speaks the actionable phrase aloud when it appears.
+private struct SiriActionBubble: View {
+    let text: String
+    let tail: Bool
+    let onOpenPass: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            BubbleRow(isSent: false, tail: tail) {
+                TextBubble(text: text, isSent: false)
+                    .siriGlow(cornerRadius: 18)
+            }
+            Button(action: onOpenPass) {
+                Label("Open Pass in Wallet", systemImage: "wallet.pass.fill")
+                    .font(.subheadline.weight(.semibold))
+            }
+            .buttonStyle(.borderedProminent)
+            .padding(.leading, 24)
+        }
+        .onAppear { SiriVoice.shared.speak("try reselling it") }
     }
 }
 
