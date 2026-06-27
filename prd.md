@@ -77,11 +77,54 @@ single-source-of-truth rule.
 - **Simulator location is simulated** — phase selection by time alone must still produce a
   sensible lead.
 
-## Open investigation
+## Siri & system-surfacing research
 
-Can this be powered by **actual Siri** (proactive intelligence / Siri Suggestions / App
-Intents donation) rather than Apple FoundationModels? Findings to be appended once the
-research lands.
+> Two independent research passes (system/proactive Siri; buildable modern paths).
+> Both corroborated. Caveat: Apple docs are JS-rendered, so findings lean on WWDC
+> transcripts + the assistant's Jan-2026 knowledge; version-sensitive claims flagged below
+> need a one-click confirm on developer.apple.com before shipping.
+
+### Verdict: can this be "powered by actual Siri" (not AFM)? — **PARTIAL.** Two different "Siri"s:
+
+- **Generating / ranking the panel's text on open → NO actual-Siri API exists.** There is no
+  public way to call "Siri's intelligence" to rank fields or write a summary. On-device
+  generation/summarization is **Apple Intelligence via FoundationModels** — that is **AFM,
+  explicitly not Siri.** Our `Summarizer` garnish is therefore AFM-or-template; labeling it
+  "Siri" would be inaccurate.
+- **Surfacing the right pass/app at the right moment → YES, that is genuinely Siri** — but
+  it is *orchestration, not generation.* You supply hints; the system decides final
+  placement/ranking. You can never force a surface at an exact moment.
+
+### "Real Siri" proactive surfaces (orchestration)
+
+| Path | Surfaces | iOS | Simulator | Note |
+|---|---|---|---|---|
+| **Signed `.pkpass` relevance** (`relevantDate`/`relevantDates`, `locations`/`beacons` + `relevantText`, `semantics`) | System Wallet surfaces the **pass** on lock screen near kickoff / at venue | 12+ (`relevantDates` ~18, verify) | n/a — needs signed pass in system Wallet | Declarative, no code. Our bundled pass is unsigned → none of this fires; the in-app mock card gets none of it. |
+| **App Intents** (`AppShortcut` + `TicketEntity`/`EntityQuery`, `PredictableIntent`) | Ticket becomes Spotlight/Siri-addressable; system *may* proactively suggest the app | 16+ (`PredictableIntent` 26) | Plumbing: yes. Predicted suggestion: **no** (needs accrued usage signals) | The honest home of "Siri-powered" framing — but it surfaces the *app*, not the panel's contents. |
+| **`NSUserActivity` donation** (`isEligibleForPrediction`, `RelevantIntent` date/location) | Feeds the same prediction engine; Smart Stack / Siri Suggestions | 12+ | Partial (system-ranked) | Lightweight donation; not deprecated. |
+
+### Buildable anticipatory surfaces (the demoable paths)
+
+| Path | What it gives | iOS | Simulator | Verdict |
+|---|---|---|---|---|
+| **ActivityKit Live Activity** | Kickoff countdown + seat/gate on Lock Screen **and the hardware Dynamic Island**; local `Text(date, style:.timer)` ticks with no push; `relevanceScore`/`staleDate` model priority | 16.1+ | **Yes** (core experience renders; local updates work) | **Strongest demoable fit.** Push-driven updates need a device + APNs. |
+| **CoreLocation `CLMonitor` geofence** | "User arrived at MetLife" trigger → flip content to gate/seat/QR | 17+ | **Yes** (Simulator GPX route crosses the boundary) | Deterministic proximity beat, fully headless. Only a trigger — wakes your logic, doesn't surface UI itself. |
+| WidgetKit Smart Stack relevance (`RelevantContext.date/location`) | Widget promoted in Smart Stack at the right time/place | 17+ | Partial (renders; promotion non-deterministic) | Lower demo payoff than Live Activity. |
+| Visual Intelligence (`SemanticContentDescriptor` via App Intents) | Camera/screenshot → deep-link into app | 26+ | **No** (needs Apple-Intelligence device) | Image-driven, weak fit; skip. |
+
+### Implication for scope (decision to revisit)
+
+The strongest *Simulator-demoable* anticipatory surface is an **ActivityKit Live Activity in
+the Dynamic Island** + a **GPX-driven geofence** — both run headless, no device/cert. This is
+exactly the hardware Dynamic Island this branch (`feature/dynamic-island`) is named for, yet
+the MVP currently lists Live Activity / hardware Dynamic Island as a **non-goal**. The
+in-app mock-island work and a Live Activity are *complementary* (same phase engine feeds
+both), so the open question is whether to **promote Live Activity into the MVP** rather than
+defer it. See the decisions log.
+
+**Verify before shipping:** `relevantDates` (~iOS 18), `RelevantIntentManager`/`RelevantIntent`
+(~iOS 18), `INRelevantShortcut` deprecation, Visual-Intelligence Simulator support. The
+Siri-vs-AFM conceptual split does not depend on these.
 
 ## Decisions log
 
