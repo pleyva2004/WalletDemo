@@ -13,11 +13,8 @@ struct PassCardView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            header
-            strip
-            fieldsSection
-            Rectangle().fill(foreground.opacity(0.18)).frame(height: 1).padding(.horizontal)
-            barcodeSection
+            hero
+            lowerContent
         }
         .background(background)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
@@ -25,70 +22,46 @@ struct PassCardView: View {
         .shadow(color: .black.opacity(0.25), radius: 14, y: 8)
     }
 
-    // MARK: Header — logo wordmark + the header field (GATE)
-
-    private var header: some View {
-        HStack(alignment: .top) {
-            HStack(spacing: 8) {
-                Image(systemName: "soccerball")
-                    .font(.title3.bold())
-                    .foregroundStyle(foreground)
-                Text(doc.logoText ?? doc.organizationName)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(foreground)
-            }
-            Spacer(minLength: 12)
-            ForEach(doc.eventTicket.headerFields ?? []) { fieldColumn($0, fill: false) }
-        }
-        .padding(.horizontal, 18)
-        .padding(.top, 18)
-        .padding(.bottom, 12)
-    }
-
-    // MARK: Strip — green pitch with the two teams
-
-    private var strip: some View {
-        ZStack {
-            LinearGradient(colors: [Color(red: 24/255, green: 110/255, blue: 28/255),
-                                    Color(red: 34/255, green: 139/255, blue: 34/255)],
-                           startPoint: .top, endPoint: .bottom)
-            GeometryReader { geo in
-                let radius = geo.size.height * 0.30
-                Path { path in
-                    path.move(to: CGPoint(x: geo.size.width / 2, y: 0))
-                    path.addLine(to: CGPoint(x: geo.size.width / 2, y: geo.size.height))
-                    path.addEllipse(in: CGRect(x: geo.size.width / 2 - radius, y: geo.size.height / 2 - radius,
-                                               width: radius * 2, height: radius * 2))
-                }
-                .stroke(Color.white.opacity(0.45), lineWidth: 1.5)
-            }
-            HStack(spacing: 8) {
-                team(doc.eventTicket.primaryFields?.first)
-                Text("VS").font(.headline.weight(.heavy)).foregroundStyle(.white.opacity(0.9))
-                team(doc.eventTicket.primaryFields?.last)
-            }
-            .padding(.horizontal, 20)
-        }
-        .frame(height: 118)
-    }
-
-    private func team(_ field: PassDocument.Field?) -> some View {
-        VStack(spacing: 4) {
-            Text(Self.flag(for: field?.value ?? "")).font(.system(size: 36))
-            Text(field?.value ?? "—").font(.title.weight(.bold)).foregroundStyle(.white)
+    // Fields + barcode on opaque navy, pulled up a hair to cover the hero's bottom edge
+    // so no anti-aliased hairline shows at the seam.
+    private var lowerContent: some View {
+        VStack(spacing: 0) {
+            fieldsSection
+            Rectangle().fill(foreground.opacity(0.18)).frame(height: 1).padding(.horizontal)
+            barcodeSection
         }
         .frame(maxWidth: .infinity)
+        .background(background)
+        .padding(.top, -1.5)
     }
 
-    // MARK: Secondary + auxiliary field rows
+    // MARK: Hero — the supplied match-day artwork (tap branding + teams baked in)
+
+    private var hero: some View {
+        Group {
+            if let art = HeroArt.image {
+                Image(uiImage: art)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+            } else {
+                Color(red: 0.10, green: 0.20, blue: 0.62).frame(height: 150)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        // Round only the top corners (to match the card); the cropped bottom edge sits flush
+        // against the fields section. Matches the card's 18pt continuous corner.
+        .clipShape(.rect(topLeadingRadius: 18, bottomLeadingRadius: 0, bottomTrailingRadius: 0, topTrailingRadius: 18, style: .continuous))
+    }
+
+    // MARK: Field rows (GATE + MATCH/KICKOFF, then SECTION/ROW/SEAT)
 
     private var fieldsSection: some View {
         VStack(spacing: 14) {
             fieldRow(doc.eventTicket.secondaryFields)
-            fieldRow(doc.eventTicket.auxiliaryFields)
+            fieldRow((doc.eventTicket.headerFields ?? []) + (doc.eventTicket.auxiliaryFields ?? []))
         }
         .padding(.horizontal, 18)
-        .padding(.vertical, 14)
+        .padding(.vertical, 16)
     }
 
     private func fieldRow(_ fields: [PassDocument.Field]?) -> some View {
@@ -97,21 +70,21 @@ struct PassCardView: View {
         }
     }
 
-    private func fieldColumn(_ field: PassDocument.Field, fill: Bool = true) -> some View {
-        VStack(alignment: field.hAlign, spacing: 2) {
+    private func fieldColumn(_ field: PassDocument.Field) -> some View {
+        VStack(alignment: field.hAlign, spacing: 3) {
             if let label = field.label, !label.isEmpty {
                 Text(label.uppercased())
-                    .font(.caption2.weight(.semibold))
+                    .font(.caption.weight(.semibold))
                     .foregroundStyle(labelColor)
                     .lineLimit(1)
             }
             Text(field.displayValue)
-                .font(.callout.weight(.medium))
+                .font(.title3.weight(.semibold))
                 .foregroundStyle(foreground)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
         }
-        .frame(maxWidth: fill ? .infinity : nil, alignment: field.frameAlign)
+        .frame(maxWidth: .infinity, alignment: field.frameAlign)
     }
 
     // MARK: Barcode
@@ -124,14 +97,14 @@ struct PassCardView: View {
                         .interpolation(.none)
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 148, height: 148)
+                        .frame(width: 120, height: 120)
                         .padding(8)
                         .background(Color.white)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
                 if let altText = code.altText {
                     Text(altText)
-                        .font(.caption2.monospaced())
+                        .font(.caption.monospaced())
                         .foregroundStyle(foreground.opacity(0.85))
                 }
             }
@@ -139,23 +112,15 @@ struct PassCardView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 18)
     }
+}
 
-    // MARK: Flags
+// MARK: - Bundled match-day artwork (the supplied logo/hero image)
 
-    private static func flag(for abbreviation: String) -> String {
-        switch abbreviation.uppercased() {
-        case "USA": return "🇺🇸"
-        case "ARG": return "🇦🇷"
-        case "MEX": return "🇲🇽"
-        case "CAN": return "🇨🇦"
-        case "BRA": return "🇧🇷"
-        case "FRA": return "🇫🇷"
-        case "ESP": return "🇪🇸"
-        case "GER": return "🇩🇪"
-        case "POR": return "🇵🇹"
-        default: return "⚽️"
-        }
-    }
+enum HeroArt {
+    static let image: UIImage? = {
+        guard let url = Bundle.main.url(forResource: "match-hero", withExtension: "png") else { return nil }
+        return UIImage(contentsOfFile: url.path)
+    }()
 }
 
 // MARK: - QR code generation (CoreImage, no external dependency)

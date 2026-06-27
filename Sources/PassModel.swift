@@ -165,7 +165,7 @@ extension PassDocument {
                            message: "WC2026|SF1|MET|SEC112|ROW8|SEAT14|SN:WC2026-SF1-MET-A112-0007",
                            altText: "WC2026-SF1-MET-A112-0007")],
         eventTicket: EventTicket(
-            headerFields: [field("gate", "GATE", "C", align: "PKTextAlignmentRight")],
+            headerFields: [field("gate", "GATE", "C")],
             primaryFields: [field("home", "USA", "USA"),
                             field("away", "ARGENTINA", "ARG", align: "PKTextAlignmentRight")],
             secondaryFields: [field("round", "MATCH", "Semi-final"),
