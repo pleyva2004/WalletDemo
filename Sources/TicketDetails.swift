@@ -182,12 +182,24 @@ struct TicketDetailsIsland: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
+            // Drop shadow cast from the exact rounded-rect and masked to the exterior ring,
+            // so it follows the button's curvature and never shows through the glass as a box.
+            .background {
+                shape
+                    .fill(.black.opacity(0.3))
+                    .blur(radius: 5)
+                    .offset(y: 3)
+                    .mask {
+                        shape.inset(by: -12)
+                            .overlay { shape.blendMode(.destinationOut) }
+                            .compositingGroup()
+                    }
+            }
             .glassEffect(.regular.interactive(), in: shape)
             .overlay(shape.strokeBorder(.white.opacity(0.7), lineWidth: 1.5))
             .contentShape(shape)
         }
         .buttonStyle(.plain)
-        .shadow(color: .black.opacity(0.2), radius: 8, y: 3)
         .padding(.vertical, 6)
     }
 }
