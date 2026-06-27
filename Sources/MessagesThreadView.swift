@@ -100,7 +100,7 @@ private struct TextBubble: View {
             .padding(.horizontal, 14)
             .padding(.vertical, 9)
             .background(
-                BubbleShape(isSent: isSent)
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .fill(isSent ? Color(red: 0.04, green: 0.52, blue: 1.0) : Color(.systemGray5))
             )
     }
@@ -114,48 +114,52 @@ private struct SiriActionBubble: View {
     let onOpenPass: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 3) {
             BubbleRow(isSent: false, tail: tail) {
                 TextBubble(text: text, isSent: false)
             }
             Button(action: onOpenPass) {
-                Label("Open Pass in Wallet", systemImage: "wallet.pass.fill")
-                    .font(.subheadline.weight(.semibold))
+                HStack(spacing: 10) {
+                    Text("Open Pass in Wallet")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(.primary)
+                    AppleWalletLogo(size: 15)
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 6)
+                .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Color(.systemGray3)))
+                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(Color(.systemGray), style: StrokeStyle(lineWidth: 1.5, lineCap: .round, dash: [1, 6])))
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.plain)
             .padding(.leading, 24)
         }
         .onAppear { SiriVoice.shared.speak("try reselling it") }
     }
 }
 
-// Rounded bubble with the iMessage tail nub at the bottom corner.
-private struct BubbleShape: Shape {
-    let isSent: Bool
+// Stylized rendition of the Apple Wallet app icon: colored cards fanning out of a pocket.
+// ponytail: drawn, not a bundled asset — Apple's exact logo is proprietary; this reads as Wallet.
+private struct AppleWalletLogo: View {
+    var size: CGFloat = 24
 
-    func path(in rect: CGRect) -> Path {
-        let r: CGFloat = 18
-        let tailW: CGFloat = 7
-        var path = Path()
-        if isSent {
-            let body = CGRect(x: 0, y: 0, width: rect.width - tailW, height: rect.height)
-            path.addRoundedRect(in: body, cornerSize: CGSize(width: r, height: r), style: .continuous)
-            path.move(to: CGPoint(x: body.maxX - r, y: body.maxY))
-            path.addQuadCurve(to: CGPoint(x: rect.maxX, y: body.maxY),
-                              control: CGPoint(x: body.maxX + tailW, y: body.maxY - 4))
-            path.addQuadCurve(to: CGPoint(x: body.maxX - r - 6, y: body.maxY),
-                              control: CGPoint(x: body.maxX - 2, y: body.maxY))
-        } else {
-            let body = CGRect(x: tailW, y: 0, width: rect.width - tailW, height: rect.height)
-            path.addRoundedRect(in: body, cornerSize: CGSize(width: r, height: r), style: .continuous)
-            path.move(to: CGPoint(x: body.minX + r, y: body.maxY))
-            path.addQuadCurve(to: CGPoint(x: rect.minX, y: body.maxY),
-                              control: CGPoint(x: body.minX - tailW, y: body.maxY - 4))
-            path.addQuadCurve(to: CGPoint(x: body.minX + r + 6, y: body.maxY),
-                              control: CGPoint(x: body.minX + 2, y: body.maxY))
+    var body: some View {
+        ZStack(alignment: .bottom) {
+            card(Color(red: 0.99, green: 0.62, blue: 0.09), width: 0.72, peek: 0.26) // orange (back)
+            card(Color(red: 0.96, green: 0.26, blue: 0.45), width: 0.82, peek: 0.18) // pink
+            card(Color(red: 0.21, green: 0.74, blue: 0.97), width: 0.91, peek: 0.10) // blue
+            RoundedRectangle(cornerRadius: size * 0.14, style: .continuous)          // front pocket
+                .fill(Color(red: 0.13, green: 0.14, blue: 0.18))
+                .frame(width: size, height: size * 0.56)
         }
-        path.closeSubpath()
-        return path
+        .frame(width: size, height: size)
+    }
+
+    private func card(_ c: Color, width: CGFloat, peek: CGFloat) -> some View {
+        RoundedRectangle(cornerRadius: size * 0.10, style: .continuous)
+            .fill(c)
+            .frame(width: size * width, height: size * 0.5)
+            .offset(y: -size * peek)
     }
 }
 
