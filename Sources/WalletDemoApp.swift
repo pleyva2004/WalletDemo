@@ -19,7 +19,8 @@ struct WalletDemoApp: App {
                     }
                 case .pass:
                     ContentView(initiallyFlipped: true,
-                                siriPrompt: "Would you like me to check resell tickets?")
+                                siriPrompt: "Would you like me to check resell tickets?",
+                                onBack: { withAnimation(.easeInOut(duration: 0.35)) { screen = .messages } })
                 }
             }
             .transition(.opacity)

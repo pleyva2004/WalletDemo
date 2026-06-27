@@ -7,10 +7,13 @@ struct ContentView: View {
     /// the Messages resell flow). `siriPrompt`, when set, replaces the island's field rows.
     let initiallyFlipped: Bool
     let siriPrompt: String?
+    /// When set, a top-left "Back to Messages" button returns to the thread.
+    let onBack: (() -> Void)?
 
-    init(initiallyFlipped: Bool = false, siriPrompt: String? = nil) {
+    init(initiallyFlipped: Bool = false, siriPrompt: String? = nil, onBack: (() -> Void)? = nil) {
         self.initiallyFlipped = initiallyFlipped
         self.siriPrompt = siriPrompt
+        self.onBack = onBack
     }
 
     /// 0 = front (pass) facing the viewer, 180 = back (Ticket Details) facing the viewer.
@@ -34,6 +37,18 @@ struct ContentView: View {
                 .padding()
             }
             .navigationTitle("Wallet")
+            .toolbar {
+                if let onBack {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button(action: onBack) {
+                            HStack(spacing: 3) {
+                                Image(systemName: "chevron.backward").font(.body.weight(.semibold))
+                                Text("Back to Messages")
+                            }
+                        }
+                    }
+                }
+            }
         }
         .onAppear {
             haptics.prewarm()
