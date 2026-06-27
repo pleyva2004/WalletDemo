@@ -1,0 +1,76 @@
+{
+  "formatVersion": 1,
+  "passTypeIdentifier": "pass.com.pablo.walletdemo.worldcup2026",
+  "serialNumber": "WC2026-SF1-MET-A112-0007",
+  "teamIdentifier": "ABCDE12345",
+  "organizationName": "WalletDemo FIFA World Cup 26",
+  "description": "FIFA World Cup 2026 Semi-final - USA vs Argentina",
+  "foregroundColor": "rgb(255, 255, 255)",
+  "backgroundColor": "rgb(11, 38, 80)",
+  "labelColor": "rgb(214, 178, 92)",
+  "logoText": "FIFA World Cup 26",
+  "relevantDate": "2026-07-14T19:00:00-04:00",
+  "expirationDate": "2026-07-15T02:00:00-04:00",
+  "sharingProhibited": true,
+  "barcodes": [
+    {
+      "format": "PKBarcodeFormatQR",
+      "message": "WC2026|SF1|MET|SEC112|ROW8|SEAT14|SN:WC2026-SF1-MET-A112-0007",
+      "messageEncoding": "iso-8859-1",
+      "altText": "WC2026-SF1-MET-A112-0007"
+    }
+  ],
+  "locations": [
+    {
+      "latitude": 40.8135,
+      "longitude": -74.0745,
+      "relevantText": "Welcome to MetLife Stadium - Semi-final kicks off soon."
+    }
+  ],
+  "eventTicket": {
+    "headerFields": [
+      { "key": "gate", "label": "GATE", "value": "C", "textAlignment": "PKTextAlignmentRight" }
+    ],
+    "primaryFields": [
+      { "key": "home", "label": "USA", "value": "USA" },
+      { "key": "away", "label": "ARGENTINA", "value": "ARG", "textAlignment": "PKTextAlignmentRight" }
+    ],
+    "secondaryFields": [
+      { "key": "round", "label": "MATCH", "value": "Semi-final" },
+      { "key": "datetime", "label": "KICKOFF", "value": "2026-07-14T19:00:00-04:00", "dateStyle": "PKDateStyleMedium", "timeStyle": "PKDateStyleShort", "ignoresTimeZone": true, "textAlignment": "PKTextAlignmentRight" }
+    ],
+    "auxiliaryFields": [
+      { "key": "section", "label": "SECTION", "value": "112" },
+      { "key": "row", "label": "ROW", "value": "8" },
+      { "key": "seat", "label": "SEAT", "value": "14", "textAlignment": "PKTextAlignmentRight" }
+    ],
+    "backFields": [
+      { "key": "venue", "label": "VENUE", "value": "MetLife Stadium, East Rutherford, New Jersey, USA" },
+      { "key": "match-id", "label": "MATCH ID", "value": "FWC26-M101 (Semi-final 1)" },
+      { "key": "entrance", "label": "RECOMMENDED ENTRANCE", "value": "Gate C - West Plaza" },
+      { "key": "doors", "label": "DOORS OPEN", "value": "2026-07-14T16:00:00-04:00", "dateStyle": "PKDateStyleMedium", "timeStyle": "PKDateStyleShort", "ignoresTimeZone": true },
+      { "key": "terms", "label": "TERMS & CONDITIONS", "value": "Non-transferable except via the official FIFA resale platform. Subject to FIFA Ticketing Terms. No re-entry. This is a mockup demo pass and is not valid for entry." },
+      { "key": "support", "label": "TICKET SUPPORT", "value": "support@walletdemo.example" }
+    ]
+  },
+  "semantics": {
+    "eventType": "PKEventTypeSportsEvent",
+    "eventName": "FIFA World Cup 2026 Semi-final: USA vs Argentina",
+    "sportName": "Soccer",
+    "leagueName": "FIFA World Cup",
+    "leagueAbbreviation": "FWC",
+    "homeTeamLocation": "United States",
+    "homeTeamAbbreviation": "USA",
+    "awayTeamLocation": "Argentina",
+    "awayTeamAbbreviation": "ARG",
+    "venueName": "MetLife Stadium",
+    "venueEntrance": "Gate C",
+    "venueLocation": { "latitude": 40.8135, "longitude": -74.0745 },
+    "eventStartDate": "2026-07-14T19:00:00-04:00",
+    "eventEndDate": "2026-07-14T21:30:00-04:00",
+    "admissionLevel": "Category 2",
+    "seats": [
+      { "seatSection": "112", "seatRow": "8", "seatNumber": "14", "seatType": "Reserved - Lower Tier" }
+    ]
+  }
+}

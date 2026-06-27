@@ -15,6 +15,9 @@ targets:
     platform: iOS
     sources:
       - path: Sources
+      - path: Pass/WorldCupPass.pass/pass.json   # single source of truth, bundled for the in-app card
+        buildPhase: resources
+      - path: Resources                          # built WorldCupPass.pkpass (loaded by the Add-to-Wallet flow)
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.pablo.WalletDemo
