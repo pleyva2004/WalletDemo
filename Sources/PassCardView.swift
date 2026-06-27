@@ -71,15 +71,15 @@ struct PassCardView: View {
     }
 
     private func fieldColumn(_ field: PassDocument.Field) -> some View {
-        VStack(alignment: field.hAlign, spacing: 2) {
+        VStack(alignment: field.hAlign, spacing: 3) {
             if let label = field.label, !label.isEmpty {
                 Text(label.uppercased())
-                    .font(.caption2.weight(.semibold))
+                    .font(.caption.weight(.semibold))
                     .foregroundStyle(labelColor)
                     .lineLimit(1)
             }
             Text(field.displayValue)
-                .font(.callout.weight(.medium))
+                .font(.title3.weight(.semibold))
                 .foregroundStyle(foreground)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
@@ -97,14 +97,14 @@ struct PassCardView: View {
                         .interpolation(.none)
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 148, height: 148)
+                        .frame(width: 120, height: 120)
                         .padding(8)
                         .background(Color.white)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
                 if let altText = code.altText {
                     Text(altText)
-                        .font(.caption2.monospaced())
+                        .font(.caption.monospaced())
                         .foregroundStyle(foreground.opacity(0.85))
                 }
             }
